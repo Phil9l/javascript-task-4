@@ -57,8 +57,9 @@ function getEmitter() {
          * @returns {this}
          */
         off: function (event, context) {
+            const eventPrefix = event + '.';
             Array.from(functions.keys()).forEach(eventName => {
-                if (eventName === event || eventName.startsWith(event + '.')) {
+                if (eventName === event || eventName.startsWith(eventPrefix)) {
                     functions.get(eventName).delete(context);
                 }
             });
@@ -67,13 +68,11 @@ function getEmitter() {
         },
 
         handleEvent: function (context, handlerData) {
-            if (handlerData.count >= handlerData.times ||
-                handlerData.count % handlerData.frequency !== 0) {
-                handlerData.count++;
-
+            handlerData.count++;
+            if (handlerData.count - 1 >= handlerData.times ||
+                (handlerData.count - 1) % handlerData.frequency !== 0) {
                 return;
             }
-            handlerData.count++;
             handlerData.handler.call(context);
         },
 
@@ -101,9 +100,8 @@ function getEmitter() {
                     eventName += '.';
                 }
                 eventName += group;
-                eventNames.push(eventName);
+                eventNames.unshift(eventName);
             });
-            eventNames.reverse();
             eventNames.forEach(newEvent => {
                 this.handleEmit(newEvent);
             });
